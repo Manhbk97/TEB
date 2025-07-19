@@ -152,7 +152,7 @@ void EBandPlannerNode::initialize() {
 
     // Setup subscribers
     odom_sub_ = nh_.subscribe<nav_msgs::Odometry>("/odom", 1, boost::bind(&EBandPlannerNode::odomCallback, this, _1));
-    global_path_sub_ = nh_.subscribe<nav_msgs::Path>("/global_plan", 1, boost::bind(&EBandPlannerNode::globalPathCallback, this, _1));
+    global_path_sub_ = nh_.subscribe<nav_msgs::Path>("/global_path", 1, boost::bind(&EBandPlannerNode::globalPathCallback, this, _1));
 
     // Create EBand components
     std::string planner_name = "eband_planner";
@@ -160,7 +160,7 @@ void EBandPlannerNode::initialize() {
     eband_trj_ctrl_ = boost::shared_ptr<EBandTrajectoryCtrl>(new EBandTrajectoryCtrl(planner_name, costmap_ros_));
     eband_visual_ = boost::shared_ptr<EBandVisualization>(new EBandVisualization);
 
-    costmap_ros_->start();
+    // costmap_ros_->start();
 
     // Connect components
     eband_->setVisualization(eband_visual_);
@@ -184,7 +184,7 @@ void EBandPlannerNode::globalPathCallback(const nav_msgs::Path::ConstPtr& msg) {
     if (!initialized_) return;
     
     global_plan_ = msg->poses;
-    ROS_INFO("Received global plan with %zu poses", global_plan_.size());
+    // ROS_INFO("Received global plan with %zu poses", global_plan_.size());
     has_global_plan_ = !global_plan_.empty();
     // Add check for empty plan
     if (global_plan_.empty()) {

@@ -30,7 +30,7 @@
     <rosparam file="$(find eband_local_planner)/config/eband.yaml" command="load" />
     
     <!-- Topic remappings -->
-    <remap from="global_plan" to="/move_base/GlobalPlanner/plan" />
+    <remap from="global_path" to="/move_base/GlobalPlanner/plan" />
     <remap from="odom" to="/odom" />
     <remap from="cmd_vel" to="/cmd_vel" />
     
