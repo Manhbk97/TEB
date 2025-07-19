@@ -1,0 +1,39 @@
+<!-- Launch file for EBand Local Planner Node -->
+<launch>
+  <!-- Node parameters -->
+  <arg name="node_name" default="eband_local_planner" />
+  <arg name="global_frame" default="map" />
+  <arg name="robot_base_frame" default="base_link" />
+  <arg name="control_frequency" default="10.0" />
+  
+  <!-- Costmap parameters -->
+  <arg name="costmap_topic" default="costmap" />
+  
+  <!-- EBand Local Planner Node -->
+  <node name="$(arg node_name)" pkg="eband_local_planner" type="eband_local_planner_node" output="screen">
+    
+    <!-- Basic parameters -->
+    <param name="global_frame" value="$(arg global_frame)" />
+    <param name="robot_base_frame" value="$(arg robot_base_frame)" />
+    <param name="control_frequency" value="$(arg control_frequency)" />
+    
+    <!-- Goal tolerance parameters -->
+    <param name="xy_goal_tolerance" value="0.1" />
+    <param name="yaw_goal_tolerance" value="0.1" />
+    <param name="rot_stopped_vel" value="0.01" />
+    <param name="trans_stopped_vel" value="0.01" />
+    
+    <!-- Local Costmap Configuration -->
+    <rosparam file="$(find eband_local_planner)/config/local_costmap_params.yaml" command="load" />
+    
+    <!-- EBand Planner Parameters -->
+    <rosparam file="$(find eband_local_planner)/config/eband.yaml" command="load" />
+    
+    <!-- Topic remappings -->
+    <remap from="global_plan" to="/move_base/GlobalPlanner/plan" />
+    <remap from="odom" to="/odom" />
+    <remap from="cmd_vel" to="/cmd_vel" />
+    
+  </node>
+  
+</launch>
