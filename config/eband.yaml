@@ -21,41 +21,41 @@ eband_equilibrium_relative_overshoot: 0.75
 eband_significant_force_lower_bound: 0.15
 
 # Costmap weight
-costmap_weight: 15.0
+costmap_weight: 12.0
 
 # Velocity limits
-max_vel_lin: 0.75
-max_vel_th: 1.0
+max_vel_lin: 1.0
+max_vel_th: 0.6
 min_vel_lin: 0.1
 min_vel_th: 0.0
 min_in_place_vel_th: 0.2
 in_place_trans_vel: 0.0
 
 # Control parameters
-k_prop: 4.0
-k_damp: 3.5
+k_prop: 5.0
+k_damp: 4.5
 Ctrl_Rate: 10.0
 max_acceleration: 0.5
 virtual_mass: 0.75
 
 # Acceleration limits
 max_translational_acceleration: 0.5
-max_rotational_acceleration: 1.0
+max_rotational_acceleration: 0.3
 
 # Rotation correction
-rotation_correction_threshold: 0.5
+rotation_correction_threshold: 0.3
 
 # Drive type
 differential_drive: true
 
 # Bubble velocity multiplier
-bubble_velocity_multiplier: 2.0
+bubble_velocity_multiplier: 2.5
 
 # Rotation threshold for in-place rotation
-rotation_threshold_angle: 0.31
+rotation_threshold_angle: 0.3
 
 # Disallow backward motion
 allow_backwards: false
 
 # Band optimization
-optimization_rate: 10.0
+optimization_rate: 8.0
