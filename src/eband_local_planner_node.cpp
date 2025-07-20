@@ -404,7 +404,7 @@ void EBandPlannerNode::spin() {
 
 // Main function
 int main(int argc, char** argv) {
-    ros::init(argc, argv, "eband_local_planner_node");
+    ros::init(argc, argv, "rgt_planner");
     ros::NodeHandle nh("~");
     
     try {

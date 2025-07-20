@@ -1,7 +1,7 @@
 <!-- Launch file for EBand Local Planner Node -->
 <launch>
   <!-- Node parameters -->
-  <arg name="node_name" default="eband_local_planner" />
+  <arg name="node_name" default="rgt_planner" />
   <arg name="global_frame" default="map" />
   <arg name="robot_base_frame" default="base_link" />
   <arg name="control_frequency" default="10.0" />

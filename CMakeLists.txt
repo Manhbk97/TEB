@@ -54,7 +54,7 @@ catkin_package(
 
 # build the library
 add_library(eband_local_planner
-  src/eband_local_planner_ros.cpp
+  # src/eband_local_planner_ros.cpp
   src/eband_local_planner.cpp
   src/conversions_and_types.cpp
   src/eband_visualization.cpp
@@ -68,18 +68,18 @@ target_link_libraries(eband_local_planner ${catkin_LIBRARIES})
 
 
 ## Build the standalone node executable
-add_executable(eband_local_planner_node 
+add_executable(rgt_planner
   src/eband_local_planner_node.cpp
 )
 
 ## Specify libraries to link the executable against
-target_link_libraries(eband_local_planner_node
+target_link_libraries(rgt_planner
   ${catkin_LIBRARIES}
   eband_local_planner
 )
 
 ## Add dependencies
-add_dependencies(eband_local_planner_node 
+add_dependencies(rgt_planner
   ${${PROJECT_NAME}_EXPORTED_TARGETS} 
   ${catkin_EXPORTED_TARGETS}
 )
