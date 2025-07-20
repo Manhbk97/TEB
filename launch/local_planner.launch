@@ -27,7 +27,7 @@
     <rosparam file="$(find local_planner)/config/local_costmap_params.yaml" command="load" />
     
     <!-- EBand Planner Parameters -->
-    <rosparam file="$(find local_planner)/config/eband.yaml" command="load" />
+    <rosparam file="$(find local_planner)/config/planner.yaml" command="load" />
     
     <!-- Topic remappings -->
     <remap from="global_path" to="/move_base/GlobalPlanner/plan" />
