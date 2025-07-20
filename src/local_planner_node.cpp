@@ -412,7 +412,7 @@ int main(int argc, char** argv) {
         PlannerNode node(nh);
         node.spin();
     } catch (const std::exception& e) {
-        ROS_ERROR("Exception in EBand planner node: %s", e.what());
+        ROS_ERROR("Exception in planner node: %s", e.what());
         return 1;
     }
     
