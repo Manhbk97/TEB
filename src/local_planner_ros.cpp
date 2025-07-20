@@ -1,41 +1,6 @@
-/*********************************************************************
- *
- * Software License Agreement (BSD License)
- *
- *  Copyright (c) 2010, Willow Garage, Inc.
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above
- *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/or other materials provided
- *     with the distribution.
- *   * Neither the name of Willow Garage, Inc. nor the names of its
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *  POSSIBILITY OF SUCH DAMAGE.
- *
- * Author: Christian Connette
- *********************************************************************/
 
-#include <eband_local_planner/eband_local_planner_ros.h>
+
+#include <local_planner/local_planner_ros.h>
 
 // pluginlib macros (defines, ...)
 #include <pluginlib/class_list_macros.h>
@@ -46,15 +11,15 @@
 
 // register this planner as a BaseGlobalPlanner plugin
 // (see http://www.ros.org/wiki/pluginlib/Tutorials/Writing%20and%20Using%20a%20Simple%20Plugin)
-PLUGINLIB_EXPORT_CLASS(eband_local_planner::EBandPlannerROS, nav_core::BaseLocalPlanner)
+PLUGINLIB_EXPORT_CLASS(local_planner::PlannerROS, nav_core::BaseLocalPlanner)
 
 
-  namespace eband_local_planner{
+  namespace local_planner{
 
-    EBandPlannerROS::EBandPlannerROS() : costmap_ros_(NULL), tf_(NULL), initialized_(false) {}
+    PlannerROS::PlannerROS() : costmap_ros_(NULL), tf_(NULL), initialized_(false) {}
 
 
-    EBandPlannerROS::EBandPlannerROS(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros)
+    PlannerROS::PlannerROS(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros)
       : costmap_ros_(NULL), tf_(NULL), initialized_(false)
     {
       // initialize planner
@@ -62,10 +27,10 @@ PLUGINLIB_EXPORT_CLASS(eband_local_planner::EBandPlannerROS, nav_core::BaseLocal
     }
 
 
-    EBandPlannerROS::~EBandPlannerROS() {}
+    PlannerROS::~PlannerROS() {}
 
 
-    void EBandPlannerROS::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros)
+    void PlannerROS::initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros)
     {
       // check if the plugin is already initialized
       if(!initialized_)
@@ -85,18 +50,18 @@ PLUGINLIB_EXPORT_CLASS(eband_local_planner::EBandPlannerROS, nav_core::BaseLocal
 
         // subscribe to topics (to get odometry information, we need to get a handle to the topic in the global namespace)
         ros::NodeHandle gn;
-        odom_sub_ = gn.subscribe<nav_msgs::Odometry>("odom", 1, boost::bind(&EBandPlannerROS::odomCallback, this, _1));
+        odom_sub_ = gn.subscribe<nav_msgs::Odometry>("odom", 1, boost::bind(&PlannerROS::odomCallback, this, _1));
 
 
         // create the actual planner that we'll use. Pass Name of plugin and pointer to global costmap to it.
         // (configuration is done via parameter server)
-        eband_ = boost::shared_ptr<EBandPlanner>(new EBandPlanner(name, costmap_ros_));
+        eband_ = boost::shared_ptr<Planner>(new Planner(name, costmap_ros_));
 
         // create the according controller
-        eband_trj_ctrl_ = boost::shared_ptr<EBandTrajectoryCtrl>(new EBandTrajectoryCtrl(name, costmap_ros_));
+        eband_trj_ctrl_ = boost::shared_ptr<TrajectoryCtrl>(new TrajectoryCtrl(name, costmap_ros_));
 
         // create object for visualization
-        eband_visual_ = boost::shared_ptr<EBandVisualization>(new EBandVisualization);
+        eband_visual_ = boost::shared_ptr<Visualization>(new EBandVisualization);
 
         // pass visualization object to elastic band
         eband_->setVisualization(eband_visual_);
@@ -109,7 +74,7 @@ PLUGINLIB_EXPORT_CLASS(eband_local_planner::EBandPlannerROS, nav_core::BaseLocal
 
         // create and initialize dynamic reconfigure
         drs_.reset(new drs(pn));
-        drs::CallbackType cb = boost::bind(&EBandPlannerROS::reconfigureCallback, this, _1, _2);
+        drs::CallbackType cb = boost::bind(&PlannerROS::reconfigureCallback, this, _1, _2);
         drs_->setCallback(cb);
 
         // set initialized flag
@@ -125,7 +90,7 @@ PLUGINLIB_EXPORT_CLASS(eband_local_planner::EBandPlannerROS, nav_core::BaseLocal
     }
 
 
-    void EBandPlannerROS::reconfigureCallback(EBandPlannerConfig& config,
+    void PlannerROS::reconfigureCallback(PlannerConfig& config,
       uint32_t level)
     {
       xy_goal_tolerance_ = config.xy_goal_tolerance;
@@ -151,7 +116,7 @@ PLUGINLIB_EXPORT_CLASS(eband_local_planner::EBandPlannerROS, nav_core::BaseLocal
 
 
     // set global plan to wrapper and pass it to eband
-    bool EBandPlannerROS::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan)
+    bool PlannerROS::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan)
     {
 
       // check if plugin initialized
@@ -168,7 +133,7 @@ PLUGINLIB_EXPORT_CLASS(eband_local_planner::EBandPlannerROS, nav_core::BaseLocal
       // transform global plan to the map frame we are working in
       // this also cuts the plan off (reduces it to local window)
       std::vector<int> start_end_counts (2, (int) global_plan_.size()); // counts from the end() of the plan
-      if(!eband_local_planner::transformGlobalPlan(*tf_, global_plan_, *costmap_ros_, costmap_ros_->getGlobalFrameID(), transformed_plan_, start_end_counts))
+      if(!local_planner::transformGlobalPlan(*tf_, global_plan_, *costmap_ros_, costmap_ros_->getGlobalFrameID(), transformed_plan_, start_end_counts))
       {
         // if plan could not be tranformed abort control and local planning
         ROS_WARN("Could not transform the global plan to the frame of the controller");
@@ -204,7 +169,7 @@ PLUGINLIB_EXPORT_CLASS(eband_local_planner::EBandPlannerROS, nav_core::BaseLocal
 
 
       // display result
-      std::vector<eband_local_planner::Bubble> current_band;
+      std::vector<local_planner::Bubble> current_band;
       if(eband_->getBand(current_band))
         eband_visual_->publishBand("bubbles", current_band);
 
@@ -215,7 +180,7 @@ PLUGINLIB_EXPORT_CLASS(eband_local_planner::EBandPlannerROS, nav_core::BaseLocal
     }
 
 
-    bool EBandPlannerROS::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
+    bool PlannerROS::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     {
       // check if plugin initialized
       if(!initialized_)
@@ -240,7 +205,7 @@ PLUGINLIB_EXPORT_CLASS(eband_local_planner::EBandPlannerROS, nav_core::BaseLocal
 
       // convert robot pose to frame in plan and set position in band at which to append
       tmp_plan.assign(1, global_pose);
-      eband_local_planner::AddAtPosition add_frames_at = add_front;
+      local_planner::AddAtPosition add_frames_at = add_front;
 
       // set it to elastic band and let eband connect it
       if(!eband_->addFrames(tmp_plan, add_frames_at))
@@ -254,7 +219,7 @@ PLUGINLIB_EXPORT_CLASS(eband_local_planner::EBandPlannerROS, nav_core::BaseLocal
       std::vector<int> plan_start_end_counter = plan_start_end_counter_;
       std::vector<geometry_msgs::PoseStamped> append_transformed_plan;
       // transform global plan to the map frame we are working in - careful this also cuts the plan off (reduces it to local window)
-      if(!eband_local_planner::transformGlobalPlan(*tf_, global_plan_, *costmap_ros_, costmap_ros_->getGlobalFrameID(), transformed_plan_, plan_start_end_counter))
+      if(!local_planner::transformGlobalPlan(*tf_, global_plan_, *costmap_ros_, costmap_ros_->getGlobalFrameID(), transformed_plan_, plan_start_end_counter))
       {
         // if plan could not be tranformed abort control and local planning
         ROS_WARN("Could not transform the global plan to the frame of the controller");
@@ -310,7 +275,7 @@ PLUGINLIB_EXPORT_CLASS(eband_local_planner::EBandPlannerROS, nav_core::BaseLocal
 
       // update Elastic Band (react on obstacle from costmap, ...)
       ROS_DEBUG("Calling optimization method for elastic band");
-      std::vector<eband_local_planner::Bubble> current_band;
+      std::vector<local_planner::Bubble> current_band;
       if(!eband_->optimizeBand())
       {
         ROS_WARN("Optimization failed - Band invalid - No controls availlable");
@@ -365,7 +330,7 @@ PLUGINLIB_EXPORT_CLASS(eband_local_planner::EBandPlannerROS, nav_core::BaseLocal
     }
 
 
-    bool EBandPlannerROS::isGoalReached()
+    bool PlannerROS::isGoalReached()
     {
       // check if plugin initialized
       if(!initialized_)
@@ -379,7 +344,7 @@ PLUGINLIB_EXPORT_CLASS(eband_local_planner::EBandPlannerROS, nav_core::BaseLocal
     }
 
 
-    void EBandPlannerROS::odomCallback(const nav_msgs::Odometry::ConstPtr& msg)
+    void PlannerROS::odomCallback(const nav_msgs::Odometry::ConstPtr& msg)
     {
       // lock Callback while reading data from topic
       boost::mutex::scoped_lock lock(odom_mutex_);

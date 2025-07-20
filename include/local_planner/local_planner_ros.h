@@ -1,42 +1,7 @@
-/*********************************************************************
- *
- * Software License Agreement (BSD License)
- *
- *  Copyright (c) 2010, Willow Garage, Inc.
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above
- *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/or other materials provided
- *     with the distribution.
- *   * Neither the name of Willow Garage, Inc. nor the names of its
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *  POSSIBILITY OF SUCH DAMAGE.
- *
- * Author: Christian Connette
- *********************************************************************/
 
-#ifndef EBAND_LOCAL_PLANNER_ROS_H_
-#define EBAND_LOCAL_PLANNER_ROS_H_
+
+#ifndef LOCAL_PLANNER_ROS_H_
+#define LOCAL_PLANNER_ROS_H_
 
 #include <ros/ros.h>
 
@@ -47,11 +12,11 @@
 #include <dynamic_reconfigure/server.h>
 
 // classes wich are parts of this pkg
-#include <eband_local_planner/eband_local_planner.h>
-#include <eband_local_planner/conversions_and_types.h>
-#include <eband_local_planner/eband_visualization.h>
-#include <eband_local_planner/eband_trajectory_controller.h>
-#include <eband_local_planner/EBandPlannerConfig.h>
+#include <local_planner/local_planner.h>
+#include <local_planner/conversions_and_types.h>
+#include <local_planner/visualization.h>
+#include <local_planner/trajectory_controller.h>
+#include <local_planner/PlannerConfig.h>
 
 // local planner specific classes which provide some macros
 #include <base_local_planner/goal_functions.h>
@@ -75,19 +40,19 @@
 #include <boost/shared_ptr.hpp>
 
 
-namespace eband_local_planner{
+namespace local_planner{
 
   /**
-   * @class EBandPlannerROS
+   * @class PlannerROS
    * @brief Plugin to the ros base_local_planner. Implements a wrapper for the Elastic Band Method
    */
-  class EBandPlannerROS : public nav_core::BaseLocalPlanner{
+  class PlannerROS : public nav_core::BaseLocalPlanner{
 
     public:
       /**
        * @brief Default constructor for the ros wrapper
        */
-      EBandPlannerROS();
+      PlannerROS();
     
     /**
        * @brief Constructs the ros wrapper
@@ -95,13 +60,13 @@ namespace eband_local_planner{
        * @param tf A pointer to a transform listener
        * @param costmap The cost map to use for assigning costs to trajectories
        */
-    EBandPlannerROS(std::string name, tf2_ros::Buffer* tf,
+    PlannerROS(std::string name, tf2_ros::Buffer* tf,
 		    costmap_2d::Costmap2DROS* costmap_ros);
 
       /**
        * @brief  Destructor for the wrapper
        */
-      ~EBandPlannerROS();
+      ~PlannerROS();
 
       /**
        * @brief Initializes the ros wrapper
@@ -113,7 +78,7 @@ namespace eband_local_planner{
 		    costmap_2d::Costmap2DROS* costmap_ros);
 
       /**
-       * @brief Set the plan that the controller is following; also reset eband-planner
+       * @brief Set the plan that the controller is following; also reset planner
        * @param orig_global_plan The plan to pass to the controller
        * @return True if the plan was updated successfully, false otherwise
        */
@@ -139,10 +104,10 @@ namespace eband_local_planner{
        * @param config The dynamic reconfigure node configuration
        * @param level Reconfiguration level
        */
-      void reconfigureCallback(EBandPlannerConfig& config, uint32_t level);
+      void reconfigureCallback(PlannerConfig& config, uint32_t level);
 
       typedef dynamic_reconfigure::Server<
-        eband_local_planner::EBandPlannerConfig> drs;
+        local_planner::PlannerConfig> drs;
       //! dynamic reconfigure server ptr
       boost::shared_ptr<drs> drs_;
 
@@ -166,9 +131,9 @@ namespace eband_local_planner{
       std::vector<int> plan_start_end_counter_; // stores which number start and end frame of the transformed plan have inside the global plan
 
       // pointer to locally created objects (delete - except for smart-ptrs:)
-      boost::shared_ptr<EBandPlanner> eband_;
-      boost::shared_ptr<EBandVisualization> eband_visual_;
-      boost::shared_ptr<EBandTrajectoryCtrl> eband_trj_ctrl_;
+      boost::shared_ptr<Planner> eband_;
+      boost::shared_ptr<Visualization> eband_visual_;
+      boost::shared_ptr<TrajectoryCtrl> eband_trj_ctrl_;
 
       bool goal_reached_;
 

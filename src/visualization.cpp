@@ -1,60 +1,24 @@
-/*********************************************************************
- *
- * Software License Agreement (BSD License)
- *
- *  Copyright (c) 2010, Willow Garage, Inc.
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above
- *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/or other materials provided
- *     with the distribution.
- *   * Neither the name of Willow Garage, Inc. nor the names of its
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *  POSSIBILITY OF SUCH DAMAGE.
- *
- * Author: Christian Connette
- *********************************************************************/
 
 
-#include <eband_local_planner/eband_visualization.h>
+#include <local_planner/visualization.h>
 
 
-namespace eband_local_planner{
+namespace local_planner{
 
 
-  EBandVisualization::EBandVisualization() : initialized_(false) {}
+  Visualization::Visualization() : initialized_(false) {}
 
 
-  EBandVisualization::EBandVisualization(ros::NodeHandle& pn, costmap_2d::Costmap2DROS* costmap_ros)
+  Visualization::Visualization(ros::NodeHandle& pn, costmap_2d::Costmap2DROS* costmap_ros)
   {
     initialize(pn, costmap_ros);
   }
 
 
-  EBandVisualization::~EBandVisualization() {}
+  Visualization::~Visualization() {}
 
 
-  void EBandVisualization::initialize(ros::NodeHandle& pn, costmap_2d::Costmap2DROS* costmap_ros)
+  void Visualization::initialize(ros::NodeHandle& pn, costmap_2d::Costmap2DROS* costmap_ros)
   {
     // check if visualization already initialized
     if(!initialized_)
@@ -63,9 +27,9 @@ namespace eband_local_planner{
       pn.param("marker_lifetime", marker_lifetime_, 0.5);
 
       // advertise topics
-      one_bubble_pub_ = pn.advertise<visualization_msgs::Marker>("eband_visualization", 1);
+      one_bubble_pub_ = pn.advertise<visualization_msgs::Marker>("visualization", 1);
       // although we want to publish MarkerArrays we have to advertise Marker topic first -> rviz searchs relative to this
-      bubble_pub_ = pn.advertise<visualization_msgs::MarkerArray>("eband_visualization_array", 1);
+      bubble_pub_ = pn.advertise<visualization_msgs::MarkerArray>("visualization_array", 1);
 
       // copy adress of costmap and Transform Listener (handed over from move_base) -> to get robot shape
       costmap_ros_ = costmap_ros;
@@ -79,14 +43,14 @@ namespace eband_local_planner{
   }
 
   
-  void EBandVisualization::reconfigure(
-    eband_local_planner::EBandPlannerConfig& config)
+  void Visualization::reconfigure(
+    local_planner::PlannerConfig& config)
   {
     marker_lifetime_ = config.marker_lifetime;
   }
 
 
-  void EBandVisualization::publishBand(std::string marker_name_space, std::vector<Bubble> band)
+  void Visualization::publishBand(std::string marker_name_space, std::vector<Bubble> band)
   {
     // check if visualization was initialized
     if(!initialized_)
@@ -119,7 +83,7 @@ namespace eband_local_planner{
   }
 
 
-  void EBandVisualization::publishBubble(std::string marker_name_space, int marker_id, Bubble bubble)
+  void Visualization::publishBubble(std::string marker_name_space, int marker_id, Bubble bubble)
   {
     // check if visualization was initialized
     if(!initialized_)
@@ -138,7 +102,7 @@ namespace eband_local_planner{
   }
 
 
-  void EBandVisualization::publishBubble(std::string marker_name_space, int marker_id, Color marker_color, Bubble bubble)
+  void Visualization::publishBubble(std::string marker_name_space, int marker_id, Color marker_color, Bubble bubble)
   {
     // check if visualization was initialized
     if(!initialized_)
@@ -157,7 +121,7 @@ namespace eband_local_planner{
   }
 
 
-  void EBandVisualization::publishForceList(std::string marker_name_space, std::vector<geometry_msgs::WrenchStamped> forces, std::vector<Bubble> band)
+  void Visualization::publishForceList(std::string marker_name_space, std::vector<geometry_msgs::WrenchStamped> forces, std::vector<Bubble> band)
   {
     // check if visualization was initialized
     if(!initialized_)
@@ -190,7 +154,7 @@ namespace eband_local_planner{
     bubble_pub_.publish(forces_msg);
   }
 
-  void EBandVisualization::publishForce(std::string marker_name_space, int id, Color marker_color, geometry_msgs::WrenchStamped force, Bubble bubble)
+  void Visualization::publishForce(std::string marker_name_space, int id, Color marker_color, geometry_msgs::WrenchStamped force, Bubble bubble)
   {
     // check if visualization was initialized
     if(!initialized_)
@@ -209,7 +173,7 @@ namespace eband_local_planner{
   }
 
 
-  void EBandVisualization::bubbleToMarker(Bubble bubble, visualization_msgs::Marker& marker, std::string marker_name_space, int marker_id, Color marker_color)
+  void Visualization::bubbleToMarker(Bubble bubble, visualization_msgs::Marker& marker, std::string marker_name_space, int marker_id, Color marker_color)
   {
     geometry_msgs::Pose2D tmp_pose2d;
 
@@ -251,7 +215,7 @@ namespace eband_local_planner{
   }
 
 
-  void EBandVisualization::bubbleHeadingToMarker(Bubble bubble, visualization_msgs::Marker& marker, std::string marker_name_space, int marker_id, Color marker_color)
+  void Visualization::bubbleHeadingToMarker(Bubble bubble, visualization_msgs::Marker& marker, std::string marker_name_space, int marker_id, Color marker_color)
   {
     geometry_msgs::Pose2D tmp_pose2d;
 
@@ -293,7 +257,7 @@ namespace eband_local_planner{
   }
 
 
-  void EBandVisualization::forceToMarker(geometry_msgs::WrenchStamped wrench, geometry_msgs::Pose wrench_origin, visualization_msgs::Marker& marker, std::string marker_name_space, int marker_id, Color marker_color)
+  void Visualization::forceToMarker(geometry_msgs::WrenchStamped wrench, geometry_msgs::Pose wrench_origin, visualization_msgs::Marker& marker, std::string marker_name_space, int marker_id, Color marker_color)
   {
     geometry_msgs::Pose2D tmp_pose2d;
 

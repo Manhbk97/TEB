@@ -1,6 +1,6 @@
 # http://ros.org/doc/groovy/api/catkin/html/user_guide/supposed.html
 cmake_minimum_required(VERSION 2.8.3)
-project(eband_local_planner)
+project(local_planner)
 
 find_package(catkin REQUIRED
   COMPONENTS
@@ -32,7 +32,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-generate_dynamic_reconfigure_options(cfg/EBandPlanner.cfg)
+generate_dynamic_reconfigure_options(cfg/RGTPlanner.cfg)
 
 catkin_package(
   CATKIN_DEPENDS
@@ -49,33 +49,32 @@ catkin_package(
     tf2_ros    
     dynamic_reconfigure
   INCLUDE_DIRS include
-  LIBRARIES eband_local_planner
+  LIBRARIES local_planner
 )
 
 # build the library
-add_library(eband_local_planner
-  # src/eband_local_planner_ros.cpp
-  src/eband_local_planner.cpp
+add_library(local_planner
+  src/local_planner.cpp
   src/conversions_and_types.cpp
-  src/eband_visualization.cpp
-  src/eband_trajectory_controller.cpp
+  src/visualization.cpp
+  src/trajectory_controller.cpp
 )
-add_dependencies(eband_local_planner ${eband_local_planner_EXPORTED_TARGETS})
+add_dependencies(local_planner ${local_planner_EXPORTED_TARGETS})
 
-target_link_libraries(eband_local_planner ${catkin_LIBRARIES})
+target_link_libraries(local_planner ${catkin_LIBRARIES})
 
 
 
 
 ## Build the standalone node executable
 add_executable(rgt_planner
-  src/eband_local_planner_node.cpp
+  src/local_planner_node.cpp
 )
 
 ## Specify libraries to link the executable against
 target_link_libraries(rgt_planner
   ${catkin_LIBRARIES}
-  eband_local_planner
+  local_planner
 )
 
 ## Add dependencies
@@ -85,12 +84,12 @@ add_dependencies(rgt_planner
 )
 
 install(
-  DIRECTORY include/eband_local_planner/
+  DIRECTORY include/local_planner/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
 
 install(
-  TARGETS eband_local_planner
+  TARGETS local_planner
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
 install(

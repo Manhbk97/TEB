@@ -1,49 +1,14 @@
-/*********************************************************************
- *
- * Software License Agreement (BSD License)
- *
- *  Copyright (c) 2010, Willow Garage, Inc.
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above
- *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/or other materials provided
- *     with the distribution.
- *   * Neither the name of Willow Garage, Inc. nor the names of its
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *  POSSIBILITY OF SUCH DAMAGE.
- *
- * Author: Christian Connette
- *********************************************************************/
 
-#ifndef EBAND_VISUALIZATION_H_
-#define EBAND_VISUALIZATION_H_
+
+#ifndef VISUALIZATION_H_
+#define VISUALIZATION_H_
 
 
 #include <ros/ros.h>
 
 // classes wich are part of this pkg
-#include <eband_local_planner/conversions_and_types.h>
-#include <eband_local_planner/EBandPlannerConfig.h>
+#include <local_planner/conversions_and_types.h>
+#include <local_planner/PlannerConfig.h>
 
 // msgs
 #include <geometry_msgs/Pose2D.h>
@@ -70,13 +35,13 @@
 #include <Eigen/Geometry>
 
 
-namespace eband_local_planner{
+namespace local_planner{
 
   /**
    * @class ConversionsAndTypes
    * @brief Implements type-convrsions and types used by elastic-band optimizer and according ros-wrapper class
    */
-  class EBandVisualization{
+  class Visualization{
 
     public:
 
@@ -89,17 +54,17 @@ namespace eband_local_planner{
       /**
        * @brief Default constructor
        */
-      EBandVisualization();
+      Visualization();
 
       /**
-       * @brief Construct and initializes eband visualization
+       * @brief Construct and initializes visualization
        */
-      EBandVisualization(ros::NodeHandle& pn, costmap_2d::Costmap2DROS* costmap_ros);
+      Visualization(ros::NodeHandle& pn, costmap_2d::Costmap2DROS* costmap_ros);
 
       /**
        * @brief Default destructor
        */
-      ~EBandVisualization();
+      ~Visualization();
 
       /**
        * @brief Initializes the visualization class
@@ -111,7 +76,7 @@ namespace eband_local_planner{
        * @brief Reconfigures the parameters of the planner
        * @param config The dynamic reconfigure configuration
        */
-      void reconfigure(EBandPlannerConfig& config);
+      void reconfigure(PlannerConfig& config);
 
       /**
        * @brief publishes the bubbles (Position and Expansion) in a band as Marker-Array

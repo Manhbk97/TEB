@@ -13,16 +13,16 @@
 #include <costmap_2d/costmap_2d_ros.h>
 #include <costmap_2d/costmap_2d.h>
 
-// eband includes
-#include <eband_local_planner/eband_local_planner_ros.h>
-#include <eband_local_planner/eband_local_planner.h>
-#include <eband_local_planner/eband_trajectory_controller.h>
-#include <eband_local_planner/eband_visualization.h>
-#include <eband_local_planner/conversions_and_types.h>
+// local planner includes
+#include <local_planner/local_planner_ros.h>
+#include <local_planner/local_planner.h>
+#include <local_planner/trajectory_controller.h>
+#include <local_planner/visualization.h>
+#include <local_planner/conversions_and_types.h>
 
 // dynamic reconfigure
 #include <dynamic_reconfigure/server.h>
-#include <eband_local_planner/EBandPlannerConfig.h>
+#include <local_planner/PlannerConfig.h>
 
 // base local planner utilities
 #include <base_local_planner/goal_functions.h>
@@ -33,12 +33,12 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
 
-using namespace eband_local_planner;
+using namespace local_planner;
 
-class EBandPlannerNode {
+class PlannerNode {
 public:
-    EBandPlannerNode(ros::NodeHandle& nh);
-    ~EBandPlannerNode();
+    PlannerNode(ros::NodeHandle& nh);
+    ~PlannerNode();
 
     /**
      * @brief Initialize the node
@@ -50,7 +50,7 @@ private:
     // ROS node handle
     ros::NodeHandle nh_;
 
-    typedef dynamic_reconfigure::Server<eband_local_planner::EBandPlannerConfig> drs;
+    typedef dynamic_reconfigure::Server<local_planner::PlannerConfig> drs;
     boost::shared_ptr<drs> drs_;
 
     // TF and costmap
@@ -77,10 +77,10 @@ private:
     std::vector<geometry_msgs::PoseStamped> transformed_plan_;
     std::vector<int> plan_start_end_counter_;
 
-    // EBand components
-    boost::shared_ptr<EBandPlanner> eband_;
-    boost::shared_ptr<EBandVisualization> eband_visual_;
-    boost::shared_ptr<EBandTrajectoryCtrl> eband_trj_ctrl_;
+    // Planner components
+    boost::shared_ptr<Planner> eband_;
+    boost::shared_ptr<Visualization> eband_visual_;
+    boost::shared_ptr<TrajectoryCtrl> eband_trj_ctrl_;
 
     // Flags
     bool goal_reached_;
@@ -95,13 +95,13 @@ private:
     void controlTimerCallback(const ros::TimerEvent& event);
     void odomCallback(const nav_msgs::Odometry::ConstPtr& msg);
     void globalPathCallback(const nav_msgs::Path::ConstPtr& msg);
-    void reconfigureCallback(EBandPlannerConfig& config, uint32_t level);
+    void reconfigureCallback(PlannerConfig& config, uint32_t level);
     bool setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan);
     bool computeVelocityCommands(geometry_msgs::Twist& cmd_vel);
     bool isGoalReached();
 };
 
-EBandPlannerNode::EBandPlannerNode(ros::NodeHandle& nh) : 
+PlannerNode::PlannerNode(ros::NodeHandle& nh) : 
     nh_(nh),
     costmap_ros_(nullptr),
     // costmap_(nullptr),
@@ -113,15 +113,15 @@ EBandPlannerNode::EBandPlannerNode(ros::NodeHandle& nh) :
     initialize();
 }
 
-EBandPlannerNode::~EBandPlannerNode() {
+PlannerNode::~PlannerNode() {
     if (costmap_ros_) {
         delete costmap_ros_;
     }
 }
 
-void EBandPlannerNode::initialize() {
+void PlannerNode::initialize() {
     // Initialize TF
-    tf_ = std::make_unique<tf2_ros::Buffer>(ros::Duration(10.0));
+    tf_ = std::make_unique<tf2_ros::Buffer>();
     tf_listener_ = std::make_unique<tf2_ros::TransformListener>(*tf_);
 
     // Node parameters
@@ -151,14 +151,14 @@ void EBandPlannerNode::initialize() {
     cmd_vel_pub_ = nh_.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
 
     // Setup subscribers
-    odom_sub_ = nh_.subscribe<nav_msgs::Odometry>("/odom", 1, boost::bind(&EBandPlannerNode::odomCallback, this, _1));
-    global_path_sub_ = nh_.subscribe<nav_msgs::Path>("/global_path", 1, boost::bind(&EBandPlannerNode::globalPathCallback, this, _1));
+    odom_sub_ = nh_.subscribe<nav_msgs::Odometry>("/odom", 1, boost::bind(&PlannerNode::odomCallback, this, _1));
+    global_path_sub_ = nh_.subscribe<nav_msgs::Path>("/global_path", 1, boost::bind(&PlannerNode::globalPathCallback, this, _1));
 
     // Create EBand components
-    std::string planner_name = "eband_planner";
-    eband_ = boost::shared_ptr<EBandPlanner>(new EBandPlanner(planner_name, costmap_ros_));
-    eband_trj_ctrl_ = boost::shared_ptr<EBandTrajectoryCtrl>(new EBandTrajectoryCtrl(planner_name, costmap_ros_));
-    eband_visual_ = boost::shared_ptr<EBandVisualization>(new EBandVisualization);
+    std::string planner_name = "planner";
+    eband_ = boost::shared_ptr<Planner>(new Planner(planner_name, costmap_ros_));
+    eband_trj_ctrl_ = boost::shared_ptr<TrajectoryCtrl>(new TrajectoryCtrl(planner_name, costmap_ros_));
+    eband_visual_ = boost::shared_ptr<Visualization>(new Visualization);
 
     // costmap_ros_->start();
 
@@ -169,18 +169,18 @@ void EBandPlannerNode::initialize() {
 
     // Setup dynamic reconfigure
     drs_.reset(new drs(pn));
-    drs::CallbackType cb = boost::bind(&EBandPlannerNode::reconfigureCallback, this, _1, _2);
+    drs::CallbackType cb = boost::bind(&PlannerNode::reconfigureCallback, this, _1, _2);
     drs_->setCallback(cb);
 
     // Setup control timer
     control_timer_ = nh_.createTimer(ros::Duration(1.0 / controller_frequency_), 
-                                     &EBandPlannerNode::controlTimerCallback, this);
+                                     &PlannerNode::controlTimerCallback, this);
 
     initialized_ = true;
-    ROS_INFO("EBand Local Planner Node initialized successfully");
+    ROS_INFO("Local Planner Node initialized successfully");
 }
 
-void EBandPlannerNode::globalPathCallback(const nav_msgs::Path::ConstPtr& msg) {
+void PlannerNode::globalPathCallback(const nav_msgs::Path::ConstPtr& msg) {
     if (!initialized_) return;
     
     global_plan_ = msg->poses;
@@ -197,7 +197,7 @@ void EBandPlannerNode::globalPathCallback(const nav_msgs::Path::ConstPtr& msg) {
     }
 }
 
-void EBandPlannerNode::reconfigureCallback(EBandPlannerConfig& config, uint32_t level) {
+void PlannerNode::reconfigureCallback(PlannerConfig& config, uint32_t level) {
     xy_goal_tolerance_ = config.xy_goal_tolerance;
     yaw_goal_tolerance_ = config.yaw_goal_tolerance;
     rot_stopped_vel_ = config.rot_stopped_vel;
@@ -206,7 +206,7 @@ void EBandPlannerNode::reconfigureCallback(EBandPlannerConfig& config, uint32_t 
     if (eband_)
         eband_->reconfigure(config);
     else
-        ROS_ERROR("Reconfigure CB called before eband planner initialization");
+        ROS_ERROR("Reconfigure CB called before planner initialization");
 
     if (eband_trj_ctrl_)
         eband_trj_ctrl_->reconfigure(config);
@@ -216,17 +216,17 @@ void EBandPlannerNode::reconfigureCallback(EBandPlannerConfig& config, uint32_t 
     if (eband_visual_)
         eband_visual_->reconfigure(config);
     else
-        ROS_ERROR("Reconfigure CB called before eband visualizer initialization");
+        ROS_ERROR("Reconfigure CB called before visualizer initialization");
 }
 
-void EBandPlannerNode::odomCallback(const nav_msgs::Odometry::ConstPtr& msg) {
+void PlannerNode::odomCallback(const nav_msgs::Odometry::ConstPtr& msg) {
     boost::mutex::scoped_lock lock(odom_mutex_);
     base_odom_.twist.twist.linear.x = msg->twist.twist.linear.x;
     base_odom_.twist.twist.linear.y = msg->twist.twist.linear.y;
     base_odom_.twist.twist.angular.z = msg->twist.twist.angular.z;
 }
 
-bool EBandPlannerNode::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan) {
+bool PlannerNode::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan) {
     if (!initialized_) {
         ROS_ERROR("This planner has not been initialized, please call initialize() before using this planner");
         return false;
@@ -242,7 +242,7 @@ bool EBandPlannerNode::setPlan(const std::vector<geometry_msgs::PoseStamped>& or
     }
     // Transform global plan to the map frame
     std::vector<int> start_end_counts(2, (int) global_plan_.size());
-    if (!eband_local_planner::transformGlobalPlan(*tf_, global_plan_, *costmap_ros_, 
+    if (!local_planner::transformGlobalPlan(*tf_, global_plan_, *costmap_ros_, 
                                                    costmap_ros_->getGlobalFrameID(), 
                                                    transformed_plan_, start_end_counts)) {
         ROS_WARN("Plan frame: %s, Target frame: %s", 
@@ -270,7 +270,7 @@ bool EBandPlannerNode::setPlan(const std::vector<geometry_msgs::PoseStamped>& or
     eband_->optimizeBand();
 
     // Visualize initial band
-    std::vector<eband_local_planner::Bubble> current_band;
+    std::vector<local_planner::Bubble> current_band;
     if (eband_->getBand(current_band))
         eband_visual_->publishBand("bubbles", current_band);
 
@@ -278,7 +278,7 @@ bool EBandPlannerNode::setPlan(const std::vector<geometry_msgs::PoseStamped>& or
     return true;
 }
 
-void EBandPlannerNode::controlTimerCallback(const ros::TimerEvent& event) {
+void PlannerNode::controlTimerCallback(const ros::TimerEvent& event) {
     if (!initialized_ || !has_global_plan_) {
         return;
     }
@@ -294,7 +294,7 @@ void EBandPlannerNode::controlTimerCallback(const ros::TimerEvent& event) {
     }
 }
 
-bool EBandPlannerNode::computeVelocityCommands(geometry_msgs::Twist& cmd_vel) {
+bool PlannerNode::computeVelocityCommands(geometry_msgs::Twist& cmd_vel) {
     if (!initialized_) {
         ROS_ERROR("This planner has not been initialized");
         return false;
@@ -320,7 +320,7 @@ bool EBandPlannerNode::computeVelocityCommands(geometry_msgs::Twist& cmd_vel) {
     std::vector<int> plan_start_end_counter = plan_start_end_counter_;
     std::vector<geometry_msgs::PoseStamped> append_transformed_plan;
     
-    if (!eband_local_planner::transformGlobalPlan(*tf_, global_plan_, *costmap_ros_, 
+    if (!local_planner::transformGlobalPlan(*tf_, global_plan_, *costmap_ros_, 
                                                    costmap_ros_->getGlobalFrameID(), 
                                                    transformed_plan_, plan_start_end_counter)) {
         ROS_WARN("Could not transform the global plan to the frame of the controller");
@@ -351,7 +351,7 @@ bool EBandPlannerNode::computeVelocityCommands(geometry_msgs::Twist& cmd_vel) {
     }
 
     // Optimize elastic band
-    std::vector<eband_local_planner::Bubble> current_band;
+    std::vector<local_planner::Bubble> current_band;
     if (!eband_->optimizeBand()) {
         ROS_WARN("Optimization failed - Band invalid - No controls available");
         if (eband_->getBand(current_band))
@@ -394,11 +394,11 @@ bool EBandPlannerNode::computeVelocityCommands(geometry_msgs::Twist& cmd_vel) {
     return true;
 }
 
-bool EBandPlannerNode::isGoalReached() {
+bool PlannerNode::isGoalReached() {
     return goal_reached_;
 }
 
-void EBandPlannerNode::spin() {
+void PlannerNode::spin() {
     ros::spin();
 }
 
@@ -408,7 +408,7 @@ int main(int argc, char** argv) {
     ros::NodeHandle nh("~");
     
     try {
-        EBandPlannerNode node(nh);
+        PlannerNode node(nh);
         node.spin();
     } catch (const std::exception& e) {
         ROS_ERROR("Exception in EBand planner node: %s", e.what());

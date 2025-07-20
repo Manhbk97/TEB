@@ -10,7 +10,7 @@
   <arg name="costmap_topic" default="costmap" />
   
   <!-- EBand Local Planner Node -->
-  <node name="$(arg node_name)" pkg="eband_local_planner" type="eband_local_planner_node" output="screen">
+  <node name="$(arg node_name)" pkg="local_planner" type="rgt_planner" output="screen">
     
     <!-- Basic parameters -->
     <param name="global_frame" value="$(arg global_frame)" />
@@ -24,10 +24,10 @@
     <param name="trans_stopped_vel" value="0.01" />
     
     <!-- Local Costmap Configuration -->
-    <rosparam file="$(find eband_local_planner)/config/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find local_planner)/config/local_costmap_params.yaml" command="load" />
     
     <!-- EBand Planner Parameters -->
-    <rosparam file="$(find eband_local_planner)/config/eband.yaml" command="load" />
+    <rosparam file="$(find local_planner)/config/eband.yaml" command="load" />
     
     <!-- Topic remappings -->
     <remap from="global_path" to="/move_base/GlobalPlanner/plan" />

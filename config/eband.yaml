@@ -1,4 +1,4 @@
-# EBand Local Planner Parameters
+# Local Planner Parameters
 
 # Goal tolerance
 xy_goal_tolerance: 0.1

@@ -1,42 +1,7 @@
-/*********************************************************************
- *
- * Software License Agreement (BSD License)
- *
- *  Copyright (c) 2010, Willow Garage, Inc.
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above
- *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/or other materials provided
- *     with the distribution.
- *   * Neither the name of Willow Garage, Inc. nor the names of its
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *  POSSIBILITY OF SUCH DAMAGE.
- *
- * Author: Christian Connette
- *********************************************************************/
 
-#ifndef EBAND_LOCAL_PLANNER_H_
-#define EBAND_LOCAL_PLANNER_H_
+
+#ifndef LOCAL_PLANNER_H_
+#define LOCAL_PLANNER_H_
 
 //#define DEBUG_EBAND_ // uncomment to enable additional publishing, visualization and logouts for debug
 
@@ -44,9 +9,9 @@
 #include <ros/assert.h>
 
 // classes which are part of this package
-#include <eband_local_planner/conversions_and_types.h>
-#include <eband_local_planner/eband_visualization.h>
-#include <eband_local_planner/EBandPlannerConfig.h>
+#include <local_planner/conversions_and_types.h>
+#include <local_planner/visualization.h>
+#include <local_planner/PlannerConfig.h>
 
 // local planner specific classes
 #include <base_local_planner/costmap_model.h>
@@ -69,31 +34,31 @@
 // boost classes
 #include <boost/shared_ptr.hpp>
 
-namespace eband_local_planner{
+namespace local_planner{
 
   /**
-   * @class EBandPlanner
+   * @class Planner
    * @brief Implements the Elastic Band Method for SE2-Manifold (mobile Base)
    */
-  class EBandPlanner{
+  class Planner{
 
     public:
       /**
        * @brief Default constructor
        */
-      EBandPlanner();
+      Planner();
 
       /**
        * @brief Constructs the elastic band object
        * @param name The name to give this instance of the elastic band local planner
        * @param costmap The cost map to use for assigning costs to trajectories
        */
-      EBandPlanner(std::string name, costmap_2d::Costmap2DROS* costmap_ros);
+      Planner(std::string name, costmap_2d::Costmap2DROS* costmap_ros);
 
       /**
        * @brief  Destructor
        */
-      ~EBandPlanner();
+      ~Planner();
 
       /**
        * @brief Initializes the elastic band class by accesing costmap and loading parameters
@@ -106,13 +71,13 @@ namespace eband_local_planner{
        * @brief Reconfigures the parameters of the planner
        * @param config The dynamic reconfigure configuration
        */
-      void reconfigure(EBandPlannerConfig& config);
+      void reconfigure(PlannerConfig& config);
 
       /**
        * @brief passes a reference to the eband visualization object which can be used to visualize the band optimization
        * @param pointer to visualization object
        */
-      void setVisualization(boost::shared_ptr<EBandVisualization> eband_visual);
+      void setVisualization(boost::shared_ptr<Visualization> eband_visual);
 
       /**
        * @brief Set plan which shall be optimized to elastic band planner 
@@ -174,7 +139,7 @@ namespace eband_local_planner{
 
       // pointer to locally created objects (delete - except for smart-ptrs:)
       base_local_planner::CostmapModel* world_model_; // local world model
-      boost::shared_ptr<EBandVisualization> eband_visual_; // pointer to visualization object
+      boost::shared_ptr<Visualization> eband_visual_; // pointer to visualization object
 
       // flags
       bool initialized_, visualization_;

@@ -1,43 +1,5 @@
-/*********************************************************************
- *
- * Software License Agreement (BSD License)
- *
- *  Copyright (c) 2010, Willow Garage, Inc.
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above
- *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/or other materials provided
- *     with the distribution.
- *   * Neither the name of Willow Garage, Inc. nor the names of its
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *  POSSIBILITY OF SUCH DAMAGE.
- *
- * Author: Christian Connette
- * Modified for standalone node operation
- *********************************************************************/
-
-#ifndef EBAND_LOCAL_PLANNER_NODE_H_
-#define EBAND_LOCAL_PLANNER_NODE_H_
+#ifndef LOCAL_PLANNER_NODE_H_
+#define LOCAL_PLANNER_NODE_H_
 
 #include <ros/ros.h>
 #include <nav_msgs/Path.h>
@@ -52,38 +14,38 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
 
-// EBand planner includes
-#include <eband_local_planner/eband_local_planner.h>
-#include <eband_local_planner/eband_trajectory_controller.h>
-#include <eband_local_planner/eband_visualization.h>
-#include <eband_local_planner/conversions_and_types.h>
-#include <eband_local_planner/EBandPlannerConfig.h>
+// planner includes
+#include <local_planner/local_planner.h>
+#include <local_planner/trajectory_controller.h>
+#include <local_planner/visualization.h>
+#include <local_planner/conversions_and_types.h>
+#include <local_planner/PlannerConfig.h>
 
-namespace eband_local_planner {
+namespace local_planner {
 
 /**
- * @class EBandPlannerNode
- * @brief Standalone ROS node implementation of the Elastic Band local planner
+ * @class PlannerNode
+ * @brief Standalone ROS node implementation of the Band local planner
  * 
- * This class converts the original eband_local_planner plugin into a standalone
+ * This class converts the original local_planner plugin into a standalone
  * ROS node that:
  * - Subscribes to global_plan topic
  * - Creates and manages its own local costmap
  * - Publishes velocity commands directly
  * - Handles goal reached status
  */
-class EBandPlannerNode
+class PlannerNode
 {
 public:
     /**
      * @brief Default constructor
      */
-    EBandPlannerNode();
+    PlannerNode();
     
     /**
      * @brief Destructor
      */
-    ~EBandPlannerNode();
+    ~PlannerNode();
     
     /**
      * @brief Initialize the node components
@@ -201,6 +163,6 @@ private:
     ros::Timer control_timer_;      ///< Control loop timer
 };
 
-} // namespace eband_local_planner
+} // namespace local_planner
 
-#endif // EBAND_LOCAL_PLANNER_NODE_H_
+#endif // LOCAL_PLANNER_NODE_H_

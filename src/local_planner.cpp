@@ -1,50 +1,15 @@
-/*********************************************************************
- *
- * Software License Agreement (BSD License)
- *
- *  Copyright (c) 2010, Willow Garage, Inc.
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above
- *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/or other materials provided
- *     with the distribution.
- *   * Neither the name of Willow Garage, Inc. nor the names of its
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *  POSSIBILITY OF SUCH DAMAGE.
- *
- * Author: Christian Connette
- *********************************************************************/
-
-#include <eband_local_planner/eband_local_planner.h>
 
 
-namespace eband_local_planner{
+#include <local_planner/local_planner.h>
 
 
-  EBandPlanner::EBandPlanner() : costmap_ros_(NULL), initialized_(false) {}
+namespace local_planner{
 
 
-  EBandPlanner::EBandPlanner(std::string name, costmap_2d::Costmap2DROS* costmap_ros)
+  Planner::Planner() : costmap_ros_(NULL), initialized_(false) {}
+
+
+  Planner::Planner(std::string name, costmap_2d::Costmap2DROS* costmap_ros)
     : costmap_ros_(NULL), initialized_(false)
   {
     // initialize planner
@@ -52,18 +17,18 @@ namespace eband_local_planner{
   }
 
 
-  EBandPlanner::~EBandPlanner()
+  Planner::~Planner()
   {
     delete world_model_;
   }
 
 
-  void EBandPlanner::initialize(std::string name, costmap_2d::Costmap2DROS* costmap_ros)
+  void Planner::initialize(std::string name, costmap_2d::Costmap2DROS* costmap_ros)
   {
     // check if the plugin is already initialized
     if(!initialized_)
     {
-      // copy adress of costmap (handed over from move_base via eband wrapper)
+      // copy adress of costmap (handed over from move_base via  wrapper)
       costmap_ros_ = costmap_ros;
 
       // get a pointer to the underlying costmap
@@ -93,8 +58,8 @@ namespace eband_local_planner{
     }
   }
 
-  void EBandPlanner::reconfigure(
-    eband_local_planner::EBandPlannerConfig& config)
+  void Planner::reconfigure(
+    local_planner::PlannerConfig& config)
   {
     // connectivity checking
     min_bubble_overlap_ = config.eband_min_relative_overlap;
@@ -117,7 +82,7 @@ namespace eband_local_planner{
     costmap_weight_ = config.costmap_weight;
   }
 
-  void EBandPlanner::setVisualization(boost::shared_ptr<EBandVisualization> eband_visual)
+  void Planner::setVisualization(boost::shared_ptr<Visualization> eband_visual)
   {
     eband_visual_ = eband_visual;
 
@@ -125,7 +90,7 @@ namespace eband_local_planner{
   }
 
 
-  bool EBandPlanner::setPlan(const std::vector<geometry_msgs::PoseStamped>& global_plan)
+  bool Planner::setPlan(const std::vector<geometry_msgs::PoseStamped>& global_plan)
   {
     // check if plugin initialized
     if(!initialized_)
@@ -178,7 +143,7 @@ namespace eband_local_planner{
   }
 
 
-  bool EBandPlanner::getPlan(std::vector<geometry_msgs::PoseStamped>& global_plan)
+  bool Planner::getPlan(std::vector<geometry_msgs::PoseStamped>& global_plan)
   {
     // check if plugin initialized
     if(!initialized_)
@@ -205,7 +170,7 @@ namespace eband_local_planner{
   }
 
 
-  bool EBandPlanner::getBand(std::vector<Bubble>& elastic_band)
+  bool Planner::getBand(std::vector<Bubble>& elastic_band)
   {
     // check if plugin initialized
     if(!initialized_)
@@ -227,7 +192,7 @@ namespace eband_local_planner{
   }
 
 
-  bool EBandPlanner::addFrames(const std::vector<geometry_msgs::PoseStamped>& plan_to_add, const AddAtPosition& add_frames_at)
+  bool Planner::addFrames(const std::vector<geometry_msgs::PoseStamped>& plan_to_add, const AddAtPosition& add_frames_at)
   {
     // check if plugin initialized
     if(!initialized_)
@@ -370,7 +335,7 @@ namespace eband_local_planner{
   }
 
 
-  bool EBandPlanner::optimizeBand()
+  bool Planner::optimizeBand()
   {
     // check if plugin initialized
     if(!initialized_)
@@ -399,7 +364,7 @@ namespace eband_local_planner{
   }
 
 
-  bool EBandPlanner::optimizeBand(std::vector<Bubble>& band)
+  bool Planner::optimizeBand(std::vector<Bubble>& band)
   {
     // check if plugin initialized
     if(!initialized_)
@@ -479,7 +444,7 @@ namespace eband_local_planner{
 
   // private methods
 
-  bool EBandPlanner::refineBand(std::vector<Bubble>& band)
+  bool Planner::refineBand(std::vector<Bubble>& band)
   {
     // check if plugin initialized
     if(!initialized_)
@@ -521,7 +486,7 @@ namespace eband_local_planner{
   }
 
 
-  bool EBandPlanner::removeAndFill(std::vector<Bubble>& band, std::vector<Bubble>::iterator& start_iter,std::vector<Bubble>::iterator& end_iter)
+  bool Planner::removeAndFill(std::vector<Bubble>& band, std::vector<Bubble>::iterator& start_iter,std::vector<Bubble>::iterator& end_iter)
   {
     // instantiate local variables
     bool overlap;
@@ -684,7 +649,7 @@ namespace eband_local_planner{
   }
 
 
-  bool EBandPlanner::fillGap(std::vector<Bubble>& band, std::vector<Bubble>::iterator& start_iter,std::vector<Bubble>::iterator& end_iter)
+  bool Planner::fillGap(std::vector<Bubble>& band, std::vector<Bubble>::iterator& start_iter,std::vector<Bubble>::iterator& end_iter)
   {
     // insert bubbles in the middle between not-overlapping bubbles (e.g. (Dist > Size Bub1) && (Dist > Size Bub2) )
     // repeat until gaps are closed
@@ -830,7 +795,7 @@ namespace eband_local_planner{
 
   // optimization
 
-  bool EBandPlanner::modifyBandArtificialForce(std::vector<Bubble>& band)
+  bool Planner::modifyBandArtificialForce(std::vector<Bubble>& band)
   {
     if(band.empty())
     {
@@ -985,7 +950,7 @@ namespace eband_local_planner{
   }
 
 
-  bool EBandPlanner::applyForces(int bubble_num, std::vector<Bubble>& band, std::vector<geometry_msgs::WrenchStamped> forces)
+  bool Planner::applyForces(int bubble_num, std::vector<Bubble>& band, std::vector<geometry_msgs::WrenchStamped> forces)
   {
     //cycle over all bubbles except first and last (these are fixed)
     if(band.size() <= 2)
@@ -1195,7 +1160,7 @@ namespace eband_local_planner{
   }
 
 
-  bool EBandPlanner::moveApproximateEquilibrium(const int& bubble_num, const std::vector<Bubble>& band, Bubble& curr_bubble,
+  bool Planner::moveApproximateEquilibrium(const int& bubble_num, const std::vector<Bubble>& band, Bubble& curr_bubble,
       const geometry_msgs::WrenchStamped& curr_bubble_force, geometry_msgs::Twist& curr_step_width, const int& curr_recursion_depth)
   {
 
@@ -1329,7 +1294,7 @@ namespace eband_local_planner{
   }
 
 
-  bool EBandPlanner::getForcesAt(int bubble_num, std::vector<Bubble> band, Bubble curr_bubble, geometry_msgs::WrenchStamped& forces)
+  bool Planner::getForcesAt(int bubble_num, std::vector<Bubble> band, Bubble curr_bubble, geometry_msgs::WrenchStamped& forces)
   {
     geometry_msgs::WrenchStamped internal_force, external_force;
 
@@ -1367,7 +1332,7 @@ namespace eband_local_planner{
   }
 
 
-  bool EBandPlanner::calcInternalForces(int bubble_num, std::vector<Bubble> band, Bubble curr_bubble, geometry_msgs::WrenchStamped& forces)
+  bool Planner::calcInternalForces(int bubble_num, std::vector<Bubble> band, Bubble curr_bubble, geometry_msgs::WrenchStamped& forces)
   {
     // check if plugin initialized
     if(!initialized_)
@@ -1445,7 +1410,7 @@ namespace eband_local_planner{
   }
 
 
-  bool EBandPlanner::calcExternalForces(int bubble_num, Bubble curr_bubble, geometry_msgs::WrenchStamped& forces)
+  bool Planner::calcExternalForces(int bubble_num, Bubble curr_bubble, geometry_msgs::WrenchStamped& forces)
   {
     // check if plugin initialized
     if(!initialized_)
@@ -1584,7 +1549,7 @@ namespace eband_local_planner{
   }
 
 
-  bool EBandPlanner::suppressTangentialForces(int bubble_num, std::vector<Bubble> band, geometry_msgs::WrenchStamped& forces)
+  bool Planner::suppressTangentialForces(int bubble_num, std::vector<Bubble> band, geometry_msgs::WrenchStamped& forces)
   {
     //cycle over all bubbles except first and last (these are fixed)
     if(band.size() <= 2)
@@ -1641,7 +1606,7 @@ namespace eband_local_planner{
 
   // problem (geometry) dependant functions
 
-  bool EBandPlanner::interpolateBubbles(geometry_msgs::PoseStamped start_center, geometry_msgs::PoseStamped end_center, geometry_msgs::PoseStamped& interpolated_center)
+  bool Planner::interpolateBubbles(geometry_msgs::PoseStamped start_center, geometry_msgs::PoseStamped end_center, geometry_msgs::PoseStamped& interpolated_center)
   {
     // check if plugin initialized
     if(!initialized_)
@@ -1685,7 +1650,7 @@ namespace eband_local_planner{
   }
 
 
-  bool EBandPlanner::checkOverlap(Bubble bubble1, Bubble bubble2)
+  bool Planner::checkOverlap(Bubble bubble1, Bubble bubble2)
   {
     // check if plugin initialized
     if(!initialized_)
@@ -1713,7 +1678,7 @@ namespace eband_local_planner{
   }
 
 
-  bool EBandPlanner::calcBubbleDistance(geometry_msgs::Pose start_center_pose, geometry_msgs::Pose end_center_pose, double& distance)
+  bool Planner::calcBubbleDistance(geometry_msgs::Pose start_center_pose, geometry_msgs::Pose end_center_pose, double& distance)
   {
     // check if plugin initialized
     if(!initialized_)
@@ -1748,7 +1713,7 @@ namespace eband_local_planner{
   }
 
 
-  bool EBandPlanner::calcBubbleDifference(geometry_msgs::Pose start_center_pose, geometry_msgs::Pose end_center_pose, geometry_msgs::Twist& difference)
+  bool Planner::calcBubbleDifference(geometry_msgs::Pose start_center_pose, geometry_msgs::Pose end_center_pose, geometry_msgs::Twist& difference)
   {
     // check if plugin initialized
     if(!initialized_)
@@ -1786,7 +1751,7 @@ namespace eband_local_planner{
   }
 
 
-  bool EBandPlanner::calcObstacleKinematicDistance(geometry_msgs::Pose center_pose, double& distance)
+  bool Planner::calcObstacleKinematicDistance(geometry_msgs::Pose center_pose, double& distance)
   {
     // calculate distance to nearest obstacle [depends kinematic, shape, environment]
 
@@ -1848,7 +1813,7 @@ namespace eband_local_planner{
 
   // type conversions
 
-  bool EBandPlanner::convertPlanToBand(std::vector<geometry_msgs::PoseStamped> plan, std::vector<Bubble>& band)
+  bool Planner::convertPlanToBand(std::vector<geometry_msgs::PoseStamped> plan, std::vector<Bubble>& band)
   {
     // check if plugin initialized
     if(!initialized_)
@@ -1906,7 +1871,7 @@ namespace eband_local_planner{
   }
 
 
-  bool EBandPlanner::convertBandToPlan(std::vector<geometry_msgs::PoseStamped>& plan, std::vector<Bubble> band)
+  bool Planner::convertBandToPlan(std::vector<geometry_msgs::PoseStamped>& plan, std::vector<Bubble> band)
   {
     // check if plugin initialized
     if(!initialized_)

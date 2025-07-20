@@ -1,53 +1,18 @@
-/*********************************************************************
- *
- * Software License Agreement (BSD License)
- *
- *  Copyright (c) 2010, Willow Garage, Inc.
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above
- *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/or other materials provided
- *     with the distribution.
- *   * Neither the name of Willow Garage, Inc. nor the names of its
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *  POSSIBILITY OF SUCH DAMAGE.
- *
- * Author: Christian Connette
- *********************************************************************/
 
-#include <eband_local_planner/eband_trajectory_controller.h>
+
+#include <local_planner/trajectory_controller.h>
 #include <tf2/utils.h>
 
-namespace eband_local_planner{
+namespace local_planner{
 
   using std::min;
   using std::max;
 
 
-  EBandTrajectoryCtrl::EBandTrajectoryCtrl() : costmap_ros_(NULL), initialized_(false), band_set_(false), visualization_(false) {}
+  TrajectoryCtrl::TrajectoryCtrl() : costmap_ros_(NULL), initialized_(false), band_set_(false), visualization_(false) {}
 
 
-  EBandTrajectoryCtrl::EBandTrajectoryCtrl(std::string name, costmap_2d::Costmap2DROS* costmap_ros)
+  TrajectoryCtrl::TrajectoryCtrl(std::string name, costmap_2d::Costmap2DROS* costmap_ros)
     : costmap_ros_(NULL), initialized_(false), band_set_(false), visualization_(false)
   {
     // initialize planner
@@ -58,10 +23,10 @@ namespace eband_local_planner{
   }
 
 
-  EBandTrajectoryCtrl::~EBandTrajectoryCtrl() {}
+  TrajectoryCtrl::~TrajectoryCtrl() {}
 
 
-  void EBandTrajectoryCtrl::initialize(std::string name, costmap_2d::Costmap2DROS* costmap_ros)
+  void TrajectoryCtrl::initialize(std::string name, costmap_2d::Costmap2DROS* costmap_ros)
   {
 
     // check if trajectory controller is already initialized
@@ -100,8 +65,8 @@ namespace eband_local_planner{
   }
 
 
-  void EBandTrajectoryCtrl::reconfigure(
-    eband_local_planner::EBandPlannerConfig& config)
+  void TrajectoryCtrl::reconfigure(
+    local_planner::PlannerConfig& config)
   {
     max_vel_lin_ = config.max_vel_lin;
     max_vel_th_ = config.max_vel_th;
@@ -128,14 +93,14 @@ namespace eband_local_planner{
   }
 
 
-  void EBandTrajectoryCtrl::setVisualization(boost::shared_ptr<EBandVisualization> target_visual)
+  void TrajectoryCtrl::setVisualization(boost::shared_ptr<Visualization> target_visual)
   {
     target_visual_ = target_visual;
 
     visualization_ = true;
   }
 
-  bool EBandTrajectoryCtrl::setBand(const std::vector<Bubble>& elastic_band)
+  bool TrajectoryCtrl::setBand(const std::vector<Bubble>& elastic_band)
   {
     elastic_band_ = elastic_band;
     band_set_ = true;
@@ -143,7 +108,7 @@ namespace eband_local_planner{
   }
 
 
-  bool EBandTrajectoryCtrl::setOdometry(const nav_msgs::Odometry& odometry)
+  bool TrajectoryCtrl::setOdometry(const nav_msgs::Odometry& odometry)
   {
     odom_vel_.linear.x = odometry.twist.twist.linear.x;
     odom_vel_.linear.y = odometry.twist.twist.linear.y;
@@ -173,7 +138,7 @@ namespace eband_local_planner{
       return d-2*pi;
   }
 
-  bool EBandTrajectoryCtrl::getTwistDifferentialDrive(geometry_msgs::Twist& twist_cmd, bool& goal_reached) {
+  bool TrajectoryCtrl::getTwistDifferentialDrive(geometry_msgs::Twist& twist_cmd, bool& goal_reached) {
     goal_reached = false;
 
     geometry_msgs::Twist robot_cmd, bubble_diff;
@@ -349,7 +314,7 @@ namespace eband_local_planner{
   }
 
 
-  bool EBandTrajectoryCtrl::getTwist(geometry_msgs::Twist& twist_cmd, bool& goal_reached)
+  bool TrajectoryCtrl::getTwist(geometry_msgs::Twist& twist_cmd, bool& goal_reached)
   {
     goal_reached = false;
     if (differential_drive_hack_) {
@@ -703,7 +668,7 @@ namespace eband_local_planner{
   }
 
 
-  double EBandTrajectoryCtrl::getBubbleTargetVel(const int& target_bub_num, const std::vector<Bubble>& band, geometry_msgs::Twist& VelDir)
+  double TrajectoryCtrl::getBubbleTargetVel(const int& target_bub_num, const std::vector<Bubble>& band, geometry_msgs::Twist& VelDir)
   {
     // init reference for direction vector
     VelDir.linear.x = 0.0;
@@ -763,7 +728,7 @@ namespace eband_local_planner{
   }
 
 
-  geometry_msgs::Twist EBandTrajectoryCtrl::getFrame1ToFrame2InRefFrame(const geometry_msgs::Pose& frame1, const geometry_msgs::Pose& frame2, const geometry_msgs::Pose& ref_frame)
+  geometry_msgs::Twist TrajectoryCtrl::getFrame1ToFrame2InRefFrame(const geometry_msgs::Pose& frame1, const geometry_msgs::Pose& frame2, const geometry_msgs::Pose& ref_frame)
   {
 
     geometry_msgs::Pose2D frame1_pose2D, frame2_pose2D, ref_frame_pose2D;
@@ -803,7 +768,7 @@ namespace eband_local_planner{
     return frame_diff;
   }
 
-  geometry_msgs::Twist EBandTrajectoryCtrl::getFrame1ToFrame2InRefFrameNew(const geometry_msgs::Pose& frame1, const geometry_msgs::Pose& frame2, const geometry_msgs::Pose& ref_frame)
+  geometry_msgs::Twist TrajectoryCtrl::getFrame1ToFrame2InRefFrameNew(const geometry_msgs::Pose& frame1, const geometry_msgs::Pose& frame2, const geometry_msgs::Pose& ref_frame)
   {
 
     double x1 = frame1.position.x - ref_frame.position.x;
@@ -830,7 +795,7 @@ namespace eband_local_planner{
   }
 
 
-  geometry_msgs::Twist EBandTrajectoryCtrl::transformTwistFromFrame1ToFrame2(const geometry_msgs::Twist& curr_twist,
+  geometry_msgs::Twist TrajectoryCtrl::transformTwistFromFrame1ToFrame2(const geometry_msgs::Twist& curr_twist,
       const geometry_msgs::Pose& frame1, const geometry_msgs::Pose& frame2)
   {
     geometry_msgs::Pose2D frame1_pose2D, frame2_pose2D;
@@ -855,7 +820,7 @@ namespace eband_local_planner{
   }
 
 
-  geometry_msgs::Twist EBandTrajectoryCtrl::limitTwist(const geometry_msgs::Twist& twist)
+  geometry_msgs::Twist TrajectoryCtrl::limitTwist(const geometry_msgs::Twist& twist)
   {
     geometry_msgs::Twist res = twist;
 
