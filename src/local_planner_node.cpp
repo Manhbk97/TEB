@@ -121,9 +121,10 @@ PlannerNode::~PlannerNode() {
 
 void PlannerNode::initialize() {
     // Initialize TF
-    tf_ = std::make_unique<tf2_ros::Buffer>();
+    tf_ = std::make_unique<tf2_ros::Buffer>(ros::Duration(10.0));
     tf_listener_ = std::make_unique<tf2_ros::TransformListener>(*tf_);
-
+    ROS_INFO("Waiting for TF to be ready...");
+    ros::Duration(1.0).sleep();
     // Node parameters
     // std::string robot_name;
     // nh_.param<std::string>("robot_name", robot_name, "sirbot1");
